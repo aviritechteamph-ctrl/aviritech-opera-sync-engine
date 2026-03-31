@@ -85,7 +85,21 @@ function getFromCloud($endpoint) {
 function queueBooking($booking) {
     global $config;
 
-    $filename = $config['paths']['queue'] . time() . '_' . rand(1000,9999) . '.json';
+    // Prevent duplicates
+    $bookingId = $booking['booking_id'] ?? uniqid();
 
-    file_put_contents($filename, json_encode($booking));
+    $payload = [
+        'id' => $bookingId,
+        'type' => 'BOOKING',
+        'status' => 'PENDING',
+        'retries' => 0,
+        'created_at' => date("Y-m-d H:i:s"),
+        'data' => $booking
+    ];
+
+    $filename = $config['paths']['queue'] . $bookingId . '.json';
+
+    file_put_contents($filename, json_encode($payload));
+
+    logMessage('INFO', 'Booking queued', ['id' => $bookingId]);
 }
