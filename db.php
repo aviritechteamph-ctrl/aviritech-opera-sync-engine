@@ -1,20 +1,25 @@
 <?php
 
-return [
-    'db' => [
-        'type' => 'oracle', // or 'sqlsrv'
-        'username' => 'db_user',
-        'password' => 'db_pass',
-        'connection_string' => 'localhost/XEPDB1'
-    ],
+$config = require __DIR__ . '/config.php';
 
-    'api' => [
-        'base_url' => 'https://api.aviritech.com', /*Edit as required*/
-        'token' => 'YOUR_SECURE_TOKEN'
-    ],
+function getDBConnection() {
+    global $config;
 
-    'paths' => [
-        'queue' => __DIR__ . '/queue/',
-        'logs' => __DIR__ . '/logs/'
-    ]
-];
+    if ($config['db']['type'] === 'oracle') {
+        $conn = oci_connect(
+            $config['db']['username'],
+            $config['db']['password'],
+            $config['db']['connection_string']
+        );
+
+        if (!$conn) {
+            $e = oci_error();
+            logError($e['message']);
+            return null;
+        }
+
+        return $conn;
+    }
+
+    return null;
+}
