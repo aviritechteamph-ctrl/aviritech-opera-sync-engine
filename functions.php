@@ -58,15 +58,23 @@ function getFromCloud($endpoint) {
 
     $ch = curl_init($config['api']['base_url'] . $endpoint);
 
-    curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        'Authorization: Bearer ' . $config['api']['token']
+    curl_setopt_array($ch, [
+        CURLOPT_HTTPHEADER => [
+            'Authorization: Bearer ' . $config['api']['token']
+        ],
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT => 10,
     ]);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
     $response = curl_exec($ch);
 
     if (curl_errno($ch)) {
-        logError('CURL Error: ' . curl_error($ch));
+        logMessage('ERROR', 'CURL Error', [
+            'error' => curl_error($ch),
+            'endpoint' => $endpoint
+        ]);
+        curl_close($ch);
+        return false;
     }
 
     curl_close($ch);
